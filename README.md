@@ -4,9 +4,9 @@ An utility to find linked addresses in a contract in the Ethereum network.
 
 The linked addresses are found by:
 
-1. Directly inspecting the (EIP1967)[https://eips.ethereum.org/EIPS/eip-1967] slots to find the implementation, beacon and admin addresses. The storage is inspected onchain via a JSON-RPC provider.
+1. Directly inspecting the [EIP1967](https://eips.ethereum.org/EIPS/eip-1967) slots to find the implementation, beacon and admin addresses. The storage is inspected onchain via a JSON-RPC provider.
 
-2. Asking (Etherscan)[https://etherscan.io/] for the contract source code and trying to find any getters which reffers to addresses. If the source code is verified, we can also retrieve it's `name` for displaying it nicely in the terminal.
+2. Asking [Etherscan](https://etherscan.io/) for the contract source code and trying to find any getters which reffers to addresses. If the source code is verified, we can also retrieve it's `name` for displaying it nicely in the terminal.
 
 This process is recursive and it stops at `maxDepth` recursive calls. So you can get linked addresses of linked address of a contract, and so forth.
 
