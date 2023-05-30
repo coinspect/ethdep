@@ -44,18 +44,18 @@ func (c *Contract) AddEIP1967Children(children EIP1967Slots) {
 	c.AdminContract = &Contract{
 		Addr:           children.AdminAddr,
 		ParentContract: c,
-		GivenName:      "EIP1967 ADMIN",
+		GivenName:      "EIP1967::Admin",
 	}
 
 	c.ImplContract = &Contract{
 		Addr:           children.ImplementationAddr,
 		ParentContract: c,
-		GivenName:      "EIP1967 IMPL",
+		GivenName:      "EIP1967::Impl",
 	}
 	c.BeaconContract = &Contract{
 		Addr:           children.BeaconAddr,
 		ParentContract: c,
-		GivenName:      "EIP1967 BEACON",
+		GivenName:      "EIP1967::Beacon",
 	}
 }
 
@@ -71,7 +71,7 @@ func (c *Contract) AddDependencies(eth *ETHClient, ethscan *ETHScan, depth, maxD
 
 	// XXX: probably the worst...
 	setOfLinked := make(map[string]struct{})
-	// XXX: rate limit gotten or the agumented source code was not verified
+	// XXX: rate limit gotten or the augmented source code was not verified
 	if augmentedSourceCode != nil {
 		c.OwnName = augmentedSourceCode.ContractName
 
@@ -97,7 +97,6 @@ func (c *Contract) AddDependencies(eth *ETHClient, ethscan *ETHScan, depth, maxD
 			if err != nil {
 				panic(err)
 			}
-			c.OwnName = "???"
 
 			selectors := AddressGettersToSelectors(parsedABI.Methods)
 			for name, sel := range selectors {
@@ -105,9 +104,7 @@ func (c *Contract) AddDependencies(eth *ETHClient, ethscan *ETHScan, depth, maxD
 				c.AddLinkedAddress(name, res)
 				setOfLinked[res.Hex()] = struct{}{}
 			}
-
 		}
-
 	}
 
 	slots, err := eth.GetEIP1967Slots(c.Addr)
@@ -126,23 +123,38 @@ func (c *Contract) AddDependencies(eth *ETHClient, ethscan *ETHScan, depth, maxD
 		}
 	}
 
+	if c.OwnName != "" && c.OwnName != c.GivenName {
+		c.OwnName = fmt.Sprintf(" - %s", c.OwnName)
+	} else {
+		c.OwnName = ""
+	}
+
 }
 
 func (c *Contract) buildString(depth int) string {
-	prefix := strings.Repeat("--", depth)
+	prefix := strings.Repeat(" ", depth)
 	s := fmt.Sprintf("%s\n", c.Addr)
+
 	if c.AdminContract != nil {
-		s += fmt.Sprintf("--%s> (%s - %s): %s", prefix, c.AdminContract.GivenName, c.AdminContract.OwnName, c.AdminContract.buildString(depth+1))
+		s += fmt.Sprintf("%s|-> (%s%s) - %s", prefix, c.AdminContract.GivenName, c.AdminContract.OwnName,
+			c.AdminContract.buildString(depth+1))
 	}
+
 	if c.BeaconContract != nil {
-		s += fmt.Sprintf("--%s> (%s - %s): %s", prefix, c.BeaconContract.GivenName, c.BeaconContract.OwnName, c.BeaconContract.buildString(depth+1))
+		s += fmt.Sprintf("%s|-> (%s%s) - %s", prefix, c.BeaconContract.GivenName,
+			c.BeaconContract.OwnName, c.BeaconContract.buildString(depth+1))
 	}
+
 	if c.ImplContract != nil {
-		s += fmt.Sprintf("--%s> (%s - %s): %s", prefix, c.ImplContract.GivenName, c.ImplContract.OwnName, c.ImplContract.buildString(depth+1))
+		s += fmt.Sprintf("%s|-> (%s%s) - %s", prefix, c.ImplContract.GivenName,
+			c.ImplContract.OwnName, c.ImplContract.buildString(depth+1))
 	}
+
 	for _, linkedAddr := range c.LinkedContracts {
-		s += fmt.Sprintf("--%s> (%s - %s): %s", prefix, linkedAddr.GivenName, linkedAddr.OwnName, linkedAddr.buildString(depth+1))
+		s += fmt.Sprintf("%s|-> (%s%s) - %s", prefix, linkedAddr.GivenName,
+			linkedAddr.OwnName, linkedAddr.buildString(depth+1))
 	}
+
 	return s
 
 }
@@ -180,7 +192,6 @@ func parseFlags() Flags {
 
 func main() {
 	flags := parseFlags()
-	// XXX: api keys!!!
 	eth, err := NewETHClient(flags.ETHClientEndpoint)
 	if err != nil {
 		log.Fatalf("[ERR] there was a problem initializing the JSON-RPC client: %s", err)

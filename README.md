@@ -17,7 +17,7 @@ This tool is highly **experimental** and very rough around the edges. Using it s
 
 
 ``` sh
-$ go run . -addr "0xEe6A57eC80ea46401049E92587E52f5Ec1c24785" -ethscankey $ETHERSCAN_API -jsonrpc $INFURA_MAINNET -maxDepth 3
+$ go run . -addr="0xEe6A57eC80ea46401049E92587E52f5Ec1c24785" -ethscankey=$ETHERSCAN_API -jsonrpc=$INFURA_MAINNET -maxDepth=3
 
 - Target contract: 0xEe6A57eC80ea46401049E92587E52f5Ec1c24785
 - Max depth: 3
